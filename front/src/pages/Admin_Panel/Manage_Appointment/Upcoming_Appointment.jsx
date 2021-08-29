@@ -53,8 +53,8 @@ export default function Upcoming_Appointment() {
                                 <h2><b>Upcoming Appointments</b></h2>
                             </div>
                         </div>
-                        <button className="addnew" onClick={() => history.push({ pathname: '/appointment/create' })}><i className="fa fa-plus"></i> Add New</button>
-                        <button className="addnew" onClick={() => history.push({ pathname: '/appointment/history' })}>History</button>
+                        <button onClick={() => history.push({ pathname: '/appointment/create' })}><i className="fa fa-plus"></i> Add New</button>
+                        <button onClick={() => history.push({ pathname: '/appointment/history' })}>History</button>
                     </div>
                     <input
                         type="date"

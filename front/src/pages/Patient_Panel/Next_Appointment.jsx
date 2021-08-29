@@ -3,11 +3,39 @@ import API from "../../API"
 import moment from "moment"
 import SessionContext from '../../components/session/SessionContext'
 
+import {
+    TableContainer,
+    Table,
+    TableHead,
+    TableBody,
+    TableCell,
+    TableRow,
+    Container,
+    Paper,
+    CssBaseline,
+    makeStyles,
+    Typography
+} from '@material-ui/core'
+
+const useStyles = makeStyles((theme) => ({
+    container: {
+        width: "100%",
+        margin: 5,
+        marginTop: 30,
+        marginBottom: 30,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center"
+    }
+}));
+
 export default function Next_Appointment() {
+
+    const classes = useStyles();
 
     let { session: { user: { id, token, isAdmin } } } = useContext(SessionContext);
 
-    const [appointments, setAppointments] = useState([]);
+    const [appointment, setAppointment] = useState("");
 
     async function fetchData() {
         try {
@@ -23,7 +51,7 @@ export default function Next_Appointment() {
                     const success = res.data.success;
                     if (success) {
                         let result = data.filter(d => d.status === "Waiting" && d.id_patient == id);
-                        setAppointments(result);
+                        setAppointment(result[0]);
                     }
                 });
         } catch (e) {
@@ -36,45 +64,45 @@ export default function Next_Appointment() {
     }, [])
 
     return (
+        <>
+            <CssBaseline />
+            <Container className={classes.container}>
 
-        <div className="container-xl">
-            <div className="table-responsive">
-                <div className="table-wrapper">
-                    <div className="table-title row rowspacesp">
-                        <div className="row">
-                            <div className="col-sm-5">
-                                <h2><b>Next Appointments</b></h2>
-                            </div>
-                        </div>
-                    </div>
-                    <table className="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Date</th>
-                                <th>Start</th>
-                                <th>End</th>
-                                <th>Clinic</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                <Typography variant="h3">
+                    Next Appointment
+                </Typography>
 
-                            {appointments.map((appointment, i = 1) => (
-                                <tr key={appointment.id}>
-                                    <td>{i += 1}</td>
-                                    <td>{moment(appointment.date).format("YYYY-MM-DD")}</td>
-                                    <td>{moment(appointment.start_at, "HH:mm").format('h:mm A')}</td>
-                                    <td>{moment(appointment.end_at, "HH:mm").format('h:mm A')}</td>
-                                    <td>{appointment.name}</td>
-                                    <td>{appointment.description}</td>
-                                </tr>
-                            ))}
+                <TableContainer component={Paper} style={{ marginTop: 20, width: 400 }}>
+                    <Table>
 
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+                        <TableRow>
+                            <TableCell>Date</TableCell>
+                            <TableCell>{moment(appointment.date).format("YYYY-MM-DD")}</TableCell>
+                        </TableRow>
+
+                        <TableRow>
+                            <TableCell>Start</TableCell>
+                            <TableCell>{moment(appointment.start_at, "HH:mm").format('h:mm A')}</TableCell>
+                        </TableRow>
+
+                        <TableRow>
+                            <TableCell>End</TableCell>
+                            <TableCell>{moment(appointment.end_at, "HH:mm").format('h:mm A')}</TableCell>
+                        </TableRow>
+
+                        <TableRow>
+                            <TableCell>Clinic</TableCell>
+                            <TableCell>{appointment.name}</TableCell>
+                        </TableRow>
+
+                        <TableRow>
+                            <TableCell>Description</TableCell>
+                            <TableCell>{appointment.description}</TableCell>
+                        </TableRow>
+
+                    </Table>
+                </TableContainer>
+            </Container>
+        </>
     )
 }

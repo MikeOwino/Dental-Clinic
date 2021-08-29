@@ -33,13 +33,12 @@ export default function Doctors(props) {
     <Autocomplete
       options={doctors}
       getOptionLabel={(option) => option.first_name + " " + option.middle_name + " " + option.last_name}
-      defaultvalue={doctors.find(p => p.id == props.value)}
+      // defaultvalue={doctors.find(p => p.id == props.value)}
+      // defaultValue={props.value}
       variant="outlined"
-      defaultValue={props.value}
       onChange={props.onChange}
       renderInput={(params) =>
         <TextField
-          required
           fullWidth
           {...params}
           variant="outlined"

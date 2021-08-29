@@ -2,6 +2,9 @@ import React, { useState, useEffect, useContext } from "react"
 import API from "../API"
 import SessionContext from "./session/SessionContext"
 
+import { TextField } from '@material-ui/core'
+import { Autocomplete } from '@material-ui/lab'
+
 export default function Teeth(props) {
 
     let { session: { user: { id, token, isAdmin } } } = useContext(SessionContext);
@@ -10,44 +13,46 @@ export default function Teeth(props) {
 
     useEffect(() => {
         async function fetchData() {
-            let reqBody = {
-                category: props.category
-            }
-
-            await API.post(`tooth`, reqBody, {
-                headers: {
-                    id: id,
-                    token: token,
-                    isAdmin: isAdmin
+            if (props.category && props.category != "") {
+                let reqBody = {
+                    category: props.category
                 }
-            })
-                .then(res => {
-                    const result = res.data.result;
-                    setTeeth(result)
-
+                await API.post(`tooth`, reqBody, {
+                    headers: {
+                        id: id,
+                        token: token,
+                        isAdmin: isAdmin
+                    }
                 })
+                    .then(res => {
+                        const result = res.data.result;
+                        setTeeth(result);
+                        console.log({result});
+                    });
+            } else {
+                setTeeth([]);
+            }
         }
-
         fetchData();
     }, [props.category])
 
     return (
-        <select
-            name={props.name}
+        <Autocomplete
+            options={teeth}
+            getOptionLabel={(option) =>  option.id}
+            // defaultvalue={teeth.find(t => t.id == props.value)}
+            // defaultValue={props.value}
+            variant="outlined"
             onChange={props.onChange}
-        >
-            <option value="" selected={props.value === ""}>Tooth</option>
-
-            {teeth.map(tooth =>
-                <option
-                    key={tooth.id}
-                    value={tooth.id}
-                    selected={parseInt(tooth.id) === parseInt(props.value)}
-                >
-                    {(parseInt(tooth.id) === 1 || parseInt(tooth.id) === 2) ? "All Teeth" : tooth.id}
-                </option>
-            )}
-
-        </select>
+            renderInput={(params) =>
+                <TextField
+                    fullWidth
+                    {...params}
+                    variant="outlined"
+                    label="Tooth"
+                    className={props.className}
+                />
+            }
+        />
     )
 }

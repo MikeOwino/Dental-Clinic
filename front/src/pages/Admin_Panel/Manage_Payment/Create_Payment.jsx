@@ -61,6 +61,12 @@ const useStyles = makeStyles((theme) => ({
         marginBottom: 20,
         marginTop: 20
     },
+    flexDiv: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: "space-around"
+    },
     container: {
         backgroundColor: "white",
         paddingBottom: "10px",
@@ -71,12 +77,6 @@ const useStyles = makeStyles((theme) => ({
     FormLabel: {
         textAlign: "center",
         marginTop: 12
-    },
-    flexDiv: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: "space-around"
     },
     FormControl: {
         display: "flex",

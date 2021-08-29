@@ -50,7 +50,7 @@ const useStyles = makeStyles((theme) => ({
     avatar: {
         margin: theme.spacing(1),
         backgroundColor: theme.palette.primary.main,
-        color: "white !important"
+        color: "#FFFFFF !important"
     },
     form: {
         width: '100%',
@@ -62,7 +62,7 @@ const useStyles = makeStyles((theme) => ({
         marginTop: 20
     },
     container: {
-        backgroundColor: "white",
+        backgroundColor: "#FFFFFF",
         paddingBottom: "10px",
         marginBottom: "70px",
         marginTop: "50px",
@@ -112,15 +112,19 @@ export default function Create_Request() {
         e.preventDefault();
         try {
             let reqBody = state;
-            await API.post(`request`, reqBody, {
-                headers: {
-                    id: id,
-                    token: token,
-                    isAdmin: isAdmin
-                }
-            })
-                .then(toast.success("Request Successfuly"))
-                .then(history.push({ pathname: "/patient/panel" }));
+            if (state.description.length < 70) {
+                await API.post(`request`, reqBody, {
+                    headers: {
+                        id: id,
+                        token: token,
+                        isAdmin: isAdmin
+                    }
+                })
+                    .then(toast.success("Request Successfuly"))
+                    .then(history.push({ pathname: "/patient/panel" }));
+            } else {
+                toast.warning("Note Big!")
+            }
         } catch (e) {
             console.log("ERROR", e);
         }

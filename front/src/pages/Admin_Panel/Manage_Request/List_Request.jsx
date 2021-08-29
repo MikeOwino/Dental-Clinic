@@ -1,14 +1,77 @@
 import React, { useState, useEffect, useContext } from "react"
 import { useHistory } from 'react-router'
 import API from "../../../API"
+import { Link } from "react-router-dom"
 import moment from "moment"
 import SessionContext from "../../../components/session/SessionContext"
 
+import {
+    TableContainer,
+    Table,
+    TableHead,
+    TableBody,
+    TableCell,
+    TableRow,
+    Container,
+    Paper,
+    CssBaseline,
+    makeStyles,
+    Typography
+} from '@material-ui/core'
+
+import CloseIcon from '@material-ui/icons/Cancel'
+import DoneIcon from '@material-ui/icons/CheckCircle'
+
+import HistoryIcon from '@material-ui/icons/History'
+
+const useStyles = makeStyles((theme) => ({
+    container: {
+        width: "100%",
+        margin: 5,
+        marginTop: 30
+    },
+    rejectIcon: {
+        fill: "#ed4f1c",
+        "&:hover": {
+            fill: "#e24414"
+        },
+        marginLeft: "1%"
+    },
+    acceptIcon: {
+        fill: "#8BE3D9",
+        "&:hover": {
+            fill: "#BEF4F4"
+        },
+        marginRight: "1%"
+    },
+    historyBtn: {
+        width: 120,
+        paddingBottom: 7,
+        margin: 10,
+        backgroundColor: "#ed4f1c",
+        color: "#FFFFFF",
+        '&:hover': {
+            backgroundColor: "#e24414"
+        }
+    },
+    historyBtnLink: {
+        textDecoration: "none",
+        fontSize: 16
+    },
+    historyIcon: {
+        position: "relative",
+        top: 6,
+        right: 10
+    }
+}));
+
 export default function List_Request() {
+
+    const classes = useStyles();
+    const history = useHistory();
 
     let { session: { user: { id, token, isAdmin } } } = useContext(SessionContext);
 
-    let history = useHistory();
     const [requests, setRequests] = useState([]);
 
     async function handleAccept(id_req, id_patient) {
@@ -58,71 +121,87 @@ export default function List_Request() {
     }, [])
 
     return (
-        <div className="container-xl">
-            <div className="table-responsive">
-                <div className="table-wrapper">
-                    <div className="table-title row rowspacesp">
-                        <div className="row">
-                            <div className="col-sm-5">
-                                <h2><b>Request</b></h2>
-                            </div>
-                        </div>
-                        <button className="addnew" onClick={() => history.push({ pathname: '/request/old' })}>History</button>
-                    </div>
+        <>
+            <CssBaseline />
+            <Container className={classes.container}>
 
-                    <table className="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Patient</th>
-                                <th>Description</th>
-                                <th>Date</th>
-                                <th>Hours</th>
-                                <th>Status</th>
-                                <th>Manage</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                <Typography variant="h3">
+                    List Requests
+                </Typography>
 
+
+                <Link
+                    onClick={() => history.push({ pathname: '/request/old' })}
+                    className={classes.historyBtnLink}
+                >
+
+                    <Paper align="center" className={classes.historyBtn}>
+                        <HistoryIcon className={classes.historyIcon} />
+                        History
+                    </Paper>
+                </Link>
+
+                <TableContainer component={Paper}>
+                    <Table>
+
+                        <TableHead>
+                            <TableRow>
+                                <TableCell align="center">ID</TableCell>
+                                <TableCell align="center">Name</TableCell>
+                                <TableCell align="center">Description</TableCell>
+                                <TableCell align="center">Date</TableCell>
+                                <TableCell align="center">Time</TableCell>
+                                <TableCell align="center">Status</TableCell>
+                                <TableCell align="center">Manage</TableCell>
+                            </TableRow>
+                        </TableHead>
+
+
+                        <TableBody>
                             {requests.map(request => (
-                                <tr key={request.id}>
-                                    <td>{request.id}</td>
-                                    <td>{request.first_name} {request.middle_name} {request.last_name}</td>
-                                    <td>{request.description}</td>
-                                    <td>{moment(request.date).format("YYYY-MM-DD")}  &nbsp;&nbsp;&nbsp;</td>
-                                    <td>{moment(request.date).format("h:mm A")}  &nbsp;&nbsp;&nbsp;</td>
-                                    <td>{request.status}</td>
-                                    <td>
-                                        <a
-                                            href="#"
-                                            onClick={() => handleAccept(request.id, request.id_patient)}
-                                            className="settings"
-                                            title="settings"
-                                            data-toggle="tooltip"
-                                        >
-                                            <i className="material-icons">
-                                                &#xE8B8;
-                                            </i>
-                                        </a>
+                                <TableRow key={request.id}>
 
-                                        <a
-                                            href="#"
-                                            onClick={() => handleReject(request.id)}
-                                            className="delete" title="Delete"
-                                            data-toggle="tooltip"
-                                        >
-                                            <i className="material-icons">
-                                                &#xE5C9;
-                                            </i>
-                                        </a>
-                                    </td>
-                                </tr>
+                                    <TableCell>
+                                        {request.id_patient}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {request.first_name} {request.middle_name} {request.last_name}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {request.description}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {moment(request.date).format("YYYY-MM-DD")}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {moment(request.date).format("h:mm A")}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {request.status}
+                                    </TableCell>
+
+                                    <TableCell align="center" className={classes.divRow}>
+                                        <Link onClick={() => handleAccept(request.id, request.id_patient)}>
+                                            <DoneIcon className={classes.acceptIcon} />
+                                        </Link>
+
+                                        <Link onClick={() => handleReject(request.id)}>
+                                            <CloseIcon className={classes.rejectIcon} />
+                                        </Link>
+                                    </TableCell>
+
+                                </TableRow>
                             ))}
+                        </TableBody>
 
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+                    </Table>
+                </TableContainer>
+            </Container>
+        </>
     )
 }

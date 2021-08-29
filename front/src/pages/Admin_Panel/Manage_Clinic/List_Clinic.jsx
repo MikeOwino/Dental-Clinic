@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
     },
     paper: {
         height: '90%',
-        width: ' 70%',
+        width: ' 80%',
         textAlign: 'center',
         display: 'flex !important',
         flexDirection: 'column',
@@ -43,6 +43,7 @@ const useStyles = makeStyles((theme) => ({
         paddingTop: 10
     },
     container: {
+        width: ' 100%',
         marginTop: '80px'
     },
     Typography: {
@@ -68,14 +69,12 @@ const useStyles = makeStyles((theme) => ({
 
 }));
 
-
 export default function List_Clinic() {
 
     const classes = useStyles();
+    const history = useHistory();
 
     let { session: { user: { id, token, isAdmin } } } = useContext(SessionContext);
-
-    const history = useHistory()
 
     const [clinics, setClinics] = useState([]);
 
@@ -107,10 +106,10 @@ export default function List_Clinic() {
         <>
             <CssBaseline />
             <Container className={classes.container}>
-                <Grid container className={classes.containegrid}>
+                <Grid container>
                     <Grid item xs={6} md={3} sm={4}>
                         <Paper className={classes.paper} >
-                            <Link className="addnew" onClick={() => history.push({ pathname: '/clinic/create' })}>
+                            <Link onClick={() => history.push({ pathname: '/clinic/create' })}>
                                 <IconButton className={classes.root}>
                                     <AddCircleOutline
                                         className={classes.AddCircleOutline}
@@ -136,17 +135,16 @@ export default function List_Clinic() {
                                 </Typography>
 
                                 <div className={classes.buttonsbar}>
-                                    <Link
-                                        onClick={() => history.push({ pathname: `/clinic/edit/${clinic.id}` })}
-                                        className="settings"
-                                    >
+
+                                    <Link onClick={() => history.push({ pathname: `/clinic/edit/${clinic.id}` })}>
                                         <IconButton>
                                             <EditIcon />
                                         </IconButton>
                                     </Link>
+                                    
                                     <ConfirmDelete
                                         path={`clinic/${clinic.id}`}
-                                        name="clinic"
+                                        name="Clinic"
                                         fetchData={fetchData}
                                         className={classes.DeleteIcon}
                                     />

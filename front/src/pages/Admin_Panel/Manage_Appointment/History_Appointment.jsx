@@ -70,7 +70,7 @@ export default function Today_Appointment() {
                                 <h2><b>History Appointments</b></h2>
                             </div>
                         </div>
-                        <button className="addnew" onClick={() => history.push({ pathname: '/appointment/create' })}><i className="fa fa-plus"></i> Add New</button>
+                        <button onClick={() => history.push({ pathname: '/appointment/create' })}><i className="fa fa-plus"></i> Add New</button>
                     </div>
 
                     <input

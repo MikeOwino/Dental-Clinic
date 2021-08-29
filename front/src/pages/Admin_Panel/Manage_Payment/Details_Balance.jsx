@@ -1,21 +1,105 @@
 import React, { useState, useEffect, useContext } from "react"
 import { useHistory, useParams } from 'react-router'
+import { Link } from "react-router-dom"
 import API from "../../../API"
 import moment from "moment"
 import SessionContext from "../../../components/session/SessionContext"
 
+import {
+    TableContainer,
+    Table,
+    TableHead,
+    TableBody,
+    TableCell,
+    TableRow,
+    Container,
+    Paper,
+    CssBaseline,
+    makeStyles,
+    Typography,
+    Button
+} from '@material-ui/core'
+
+import RefreshIcon from '@material-ui/icons/Refresh'
+
+import MomentUtils from '@date-io/moment'
+
+import {
+    KeyboardDatePicker,
+    MuiPickersUtilsProvider
+} from '@material-ui/pickers'
+
+const useStyles = makeStyles((theme) => ({
+    container: {
+        width: "100%",
+        margin: 5,
+        marginTop: 30,
+        marginBottom: 30
+    },
+    paperFilter: {
+        backgroundColor: "#FFFFFF",
+        padding: 12,
+        marginBottom: 10,
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-between"
+    },
+    root: {
+        '& label.Mui-focused': {
+            color: theme.palette.primary.main,
+        },
+        '& .MuiInput-underline:after': {
+            borderBottomColor: theme.palette.primary.main,
+        },
+        '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+                borderColor: theme.palette.primary.main,
+            },
+            '&:hover fieldset': {
+                borderColor: theme.palette.primary.main,
+            },
+            '&.Mui-focused fieldset': {
+                borderColor: theme.palette.primary.main,
+            },
+        },
+        '& .MuiFormHelperText-contained': {
+            display: "none"
+        },
+        '& label': {
+            color: "#8BE3D9 !important",
+        },
+        '& .PrivateNotchedOutline-root-28': {
+            borderColor: "#8BE3D9 !important",
+        }
+    },
+    resetSearch: {
+        backgroundColor: "#8BE3D9",
+        color: "#FFFFFF",
+        padding: 6,
+        fontSize: 53,
+        borderRadius: "5px",
+        '&:hover': {
+            backgroundColor: "#BEF4F4"
+        }
+    },
+    btnAddPay: {
+        height: 50
+    }
+}));
+
 export default function Details_Balance() {
 
-    let { session: { user: { id, token, isAdmin } } } = useContext(SessionContext);
-
+    const classes = useStyles();
     const history = useHistory();
     const { id: id_bal } = useParams();
 
+    let { session: { user: { id, token, isAdmin } } } = useContext(SessionContext);
+
     const [state, updateState] = useState({
         isTrue: true,
-        patient: {},
+        patient: '',
         details: [],
-        date: '',
+        date: null,
     });
 
     function setState(nextState) {
@@ -23,11 +107,6 @@ export default function Details_Balance() {
             ...prevState,
             ...nextState
         }));
-    }
-
-    function handleChange(e) {
-        let { name, value } = e.target;
-        setState({ [name]: value });
     }
 
     useEffect(() => {
@@ -62,10 +141,9 @@ export default function Details_Balance() {
                         let data = res.data.result;
                         const success = res.data.success;
                         if (success) {
-                            if (state.date && state.date != "") {
+                            if (state.date && state.date != "" && state.date != null)
                                 data = data.filter(d => d.date.substring(0, 10) == state.date);
-                                setState({ details: data });
-                            }
+                            setState({ details: data });
                         }
                     });
             } catch (e) {
@@ -76,56 +154,117 @@ export default function Details_Balance() {
     }, [state.date])
 
     return (
-        <div>
-            <h1>details balance</h1>
-            <label>{state.patient.id}</label>
-            <br />
-            <label>{state.patient.first_name} {state.patient.middle_name} {state.patient.last_name}</label>
-            <br />
+        <>
+            <CssBaseline />
+            <Container className={classes.container}>
 
-            <button
-                type="button"
-                onClick={() => history.push({ pathname: `/balance/add/payment/${id_bal}` })}
-            >
-                Add Payment
-            </button>
+                <Typography variant="h3">
+                    Details Balance
+                </Typography>
 
-            <br />
-            <label>{state.patient.balance - state.patient.payment}</label>
-            <br />
-            <input
-                type="date"
-                value={state.date}
-                name="date"
-                onChange={handleChange}
-            />
-            <button type="button" onClick={() => setState({ date: "" })}>All date</button>
+                <Typography variant="h5">
+                    {state.patient.first_name} {state.patient.middle_name} {state.patient.last_name} - {state.patient.id}
+                </Typography>
 
-            <table>
-                <tr>
-                    <th>Date</th>
-                    <th>Hours</th>
-                    <th>Balance &nbsp;&nbsp;&nbsp;</th>
-                    <th>Payment</th>
-                </tr>
-                {state.details.map(detail =>
-                    <tr key={detail.id}>
-                        <td>{moment(detail.date).format("YYYY-MM-DD")}  &nbsp;&nbsp;&nbsp;</td>
-                        <td>{moment(detail.date).format("h:mm A")}  &nbsp;&nbsp;&nbsp;</td>
-                        <td>{detail.balance}</td>
-                        <td>{detail.payment}</td>
-                    </tr>
-                )}
-                {(state.date && state.date != "") ?
-                    null :
-                    <tr style={{ 'border-top': "1px solid blue" }}>
-                        <td> Totale </td>
-                        <td></td>
-                        <td>{state.patient.balance}</td>
-                        <td>{state.patient.payment}</td>
-                    </tr>
-                }
-            </table>
-        </div>
+                <Paper className={classes.paperFilter}>
+
+                    <Typography variant="h5">
+                        Remaining <br /> {state.patient.balance - state.patient.payment}
+                    </Typography>
+
+                    <MuiPickersUtilsProvider utils={MomentUtils} >
+                        <KeyboardDatePicker
+                            focused={state.date != null}
+                            label="Date"
+                            variant="outlined"
+                            inputVariant="outlined"
+                            format="YYYY/MM/DD"
+                            value={state.date}
+                            onChange={(date) => setState({ date: moment(date).format("YYYY-MM-DD") })}
+                            KeyboardButtonProps={{
+                                'aria-label': 'change date',
+                            }}
+                            className={classes.root}
+                        />
+                    </MuiPickersUtilsProvider>
+
+                    <Button
+                        type="button"
+                        variant="contained"
+                        color="primary"
+                        className={classes.btnAddPay}
+                        onClick={() => history.push({ pathname: `/balance/add/payment/${id_bal}` })}
+                    >
+                        Add Payment
+                    </Button>
+
+                    <Link
+                        onClick={() => { setState({ date: null }) }}
+                    >
+                        <RefreshIcon className={classes.resetSearch} />
+                    </Link>
+
+                </Paper>
+
+                <TableContainer component={Paper}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell align="center">Date</TableCell>
+                                <TableCell align="center">Hours</TableCell>
+                                <TableCell align="center">Balance</TableCell>
+                                <TableCell align="center">Payment</TableCell>
+                            </TableRow>
+                        </TableHead>
+
+
+                        <TableBody>
+                            {state.details.map(detail =>
+                                <TableRow key={detail.id}>
+
+                                    <TableCell>
+                                        {moment(detail.date).format("YYYY-MM-DD")}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {moment(detail.date).format("h:mm A")}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {detail.balance}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {detail.payment}
+                                    </TableCell>
+
+                                </TableRow>
+                            )}
+
+                            {(state.date && state.date != "") ?
+                                null :
+                                <TableRow style={{ 'border-top': "1px solid blue" }}>
+                                    <TableCell>
+                                        Totale
+                                    </TableCell>
+
+                                    <TableCell> </TableCell>
+
+                                    <TableCell align="center">
+                                        {state.patient.balance}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {state.patient.payment}
+                                    </TableCell>
+                                </TableRow>
+                            }
+
+                        </TableBody>
+
+                    </Table>
+                </TableContainer>
+            </Container>
+        </>
     )
 }

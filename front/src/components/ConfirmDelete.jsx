@@ -132,7 +132,7 @@ export default function ConfirmDelete(props) {
     }
 
     return (
-        <Link onClick={handleDelete} className="delete">
+        <Link onClick={handleDelete} className={props.classNameLink} >
             <IconButton>
                 <DeleteIcon className={props.className} />
             </IconButton>

@@ -1,31 +1,153 @@
 import React, { useEffect, useState, useContext } from "react"
 import { useHistory, useParams } from 'react-router'
+import { Link } from "react-router-dom"
+import moment from "moment"
 import API from "../../../API"
 import SessionContext from "../../../components/session/SessionContext"
 
 import Teeth from "../../../components/Teeth"
+import Patients from "../../../components/Patients"
+import Doctors from "../../../components/Doctors"
 import Types from "../../../components/Types"
-import moment from "moment"
 
-import { TextField } from '@material-ui/core'
+import {
+    TableContainer,
+    Table,
+    TableHead,
+    TableBody,
+    TableCell,
+    TableRow,
+    Button,
+    CssBaseline,
+    TextField,
+    Typography,
+    makeStyles,
+    Container,
+    Paper
+} from '@material-ui/core'
+
 import { Autocomplete } from '@material-ui/lab'
+
+import AddBoxIcon from '@material-ui/icons/AddBox'
+import DeleteIcon from '@material-ui/icons/Delete'
+
+import MomentUtils from '@date-io/moment'
+
+import {
+    KeyboardDateTimePicker,
+    MuiPickersUtilsProvider
+} from '@material-ui/pickers'
+
+const useStyles = makeStyles((theme) => ({
+    root: {
+        '& label.Mui-focused': {
+            color: theme.palette.primary.main,
+        },
+        '& .MuiInput-underline:after': {
+            borderBottomColor: theme.palette.primary.main,
+        },
+        '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+                borderColor: theme.palette.primary.main,
+            },
+            '&:hover fieldset': {
+                borderColor: theme.palette.primary.main,
+            },
+            '&.Mui-focused fieldset': {
+                borderColor: theme.palette.primary.main,
+            },
+        },
+        width: 250
+    },
+    root2: {
+        '& label.Mui-focused': {
+            color: theme.palette.primary.main,
+        },
+        '& .MuiInput-underline:after': {
+            borderBottomColor: theme.palette.primary.main,
+        },
+        '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+                borderColor: theme.palette.primary.main,
+            },
+            '&:hover fieldset': {
+                borderColor: theme.palette.primary.main,
+            },
+            '&.Mui-focused fieldset': {
+                borderColor: theme.palette.primary.main,
+            },
+        },
+        width: 400
+    },
+    root3: {
+        width:100,
+        padding:5,
+        border:"1px solid #BEF4F4",
+        borderRadius:"5px",
+        '&:hover': {
+            border:"2px solid #BEF4F4",
+        },
+        '&:focus': {
+            border:"3px solid #BEF4F4",
+        },
+    },
+    deleteIcon: {
+        color: "#ed4f1c",
+        '&:hover': {
+            color: "#e24414"
+        }
+    },
+    paperFilter: {
+        backgroundColor: "#FFFFFF",
+        padding: 12,
+        marginBottom: 10,
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-around"
+    },
+    addBoxIcon: {
+        backgroundColor: "#8BE3D9",
+        color: "#FFFFFF",
+        padding: 6,
+        fontSize: 53,
+        borderRadius: "5px",
+        '&:hover': {
+            backgroundColor: "#BEF4F4"
+        },
+        '&:active': {
+            backgroundColor: "#A1F0EB"
+        }
+    },
+    inputSum: {
+        border: "none"
+    },
+    submit: {
+        width: 120,
+        marginBottom: 20,
+        marginTop: 20
+    },
+    flexDiv: {
+        backgroundColor: "#FFFFFF",
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: "space-around"
+    }
+}));
 
 export default function Edit_Procedure() {
 
-    let { session: { user: { id, token, isAdmin } } } = useContext(SessionContext);
-
+    const classes = useStyles();
     const history = useHistory();
     const { id: id_pro } = useParams();
 
+    let { session: { user: { id, token, isAdmin } } } = useContext(SessionContext);
+
     const [state, updateState] = useState({
         payment: "",
-        date: "",
+        date: "2000-01-01",
         id_patient: "",
         id_doctor: "",
-
-        patients: [],
-        doctors: [],
-        acts: [],
 
         works: [],
         total: 0,
@@ -110,7 +232,7 @@ export default function Edit_Procedure() {
         e.preventDefault();
 
         console.log(state);
-        console.log("ddddata",state.patients.find(p => p.id == state.id_patient));
+        console.log("ddddata", state.patients.find(p => p.id == state.id_patient));
         // try {
 
         //     let dd = moment(state.date).format("YYYY-MM-DD HH:mm");
@@ -199,47 +321,10 @@ export default function Edit_Procedure() {
                         let data = res.data.result;
                         const success = res.data.success;
                         if (success) {
+                            console.log(data);
                             data = data.filter(r => r.id_procedure == id_pro);
                             setState({ works: data });
                         }
-                    });
-
-                await API.get(`patient`, {
-                    headers: {
-                        id: id,
-                        token: token,
-                        isAdmin: isAdmin
-                    }
-                })
-                    .then(res => {
-                        const result = res.data.result;
-                        setState({ patients: result });
-                    });
-
-
-                await API.get(`doctor`, {
-                    headers: {
-                        id: id,
-                        token: token,
-                        isAdmin: isAdmin
-                    }
-                })
-                    .then(res => {
-                        const result = res.data.result;
-                        setState({ doctors: result });
-                    });
-
-
-                await API.get(`type`, {
-                    headers: {
-                        id: id,
-                        token: token,
-                        isAdmin: isAdmin
-                    }
-                })
-                    .then(res => {
-                        const result = res.data.result;
-                        setState({ acts: result });
                     });
             } catch (e) {
                 console.log("ERROR", e);
@@ -249,115 +334,196 @@ export default function Edit_Procedure() {
     }, [])
 
     return (
-        <div>
-            {console.log("page", state)}
-            <h1>Edit Procedure</h1>
-            <form onSubmit={handleSubmit}>
+        <>
+            <CssBaseline />
+            <Container className={classes.container}>
 
-                <input
-                    type="number"
-                    name="payment"
-                    placeholder="Payment"
-                    value={state.payment}
-                    onChange={handleChange}
-                />
+                <Typography variant="h3">
+                    Edit Procedure
+                </Typography>
 
-                <input
-                    type="datetime-local"
-                    name="date"
-                    value={state.date}
-                    onChange={handleChange}
-                />
+                <form onSubmit={handleSubmit}>
 
-                <Autocomplete
-                    options={state.patients}
-                    getOptionLabel={(option) => option.first_name + " " + option.middle_name + " " + option.last_name + " - " + option.id}
-                    defaultValue={state.id_patient != "" ? state.patients.find(p => p.id == state.id_patient) : ""}
-                    onChange={(event, newValue) => {
-                        setState({ id_patient: newValue ? newValue.id : "" });
-                    }}
-                    renderInput={(params) =>
-                        <TextField
-                            required
-                            fullWidth
-                            {...params}
-                            variant="outlined"
-                            label="Patient"
+                    <Paper className={classes.paperFilter}>
+
+                        <Patients
+                            value={state.id_patient}
+                            onChange={(event, newValue) => {
+                                setState({ id_patient: newValue ? newValue.id : "" });
+                            }}
+                            className={classes.root2}
                         />
-                    }
-                />
 
-                <Autocomplete
-                    options={state.doctors}
-                    defaultValue={state.id_doctor != "" ? state.doctors.find(d => d.id == state.id_doctor) : ""}
-                    getOptionLabel={(option) => option.first_name + " " + option.middle_name + " " + option.last_name}
-                    variant="outlined"
-                    onChange={(event, newValue) => {
-                        setState({ id_doctor: newValue ? newValue.id : "" });
-                    }}
-                    renderInput={(params) =>
+                        <MuiPickersUtilsProvider utils={MomentUtils} >
+                            <KeyboardDateTimePicker
+                                value={state.date}
+                                inputVariant="outlined"
+                                onChange={(date) => setState({ date: moment(date).format("YYYY/MM/DD hh:mm a") })}
+                                label="Date Time"
+                                format="YYYY/MM/DD hh:mm a"
+                                className={classes.root2}
+                            />
+                        </MuiPickersUtilsProvider>
+
+                    </Paper>
+
+
+                    <Paper className={classes.paperFilter}>
+
                         <TextField
-                            fullWidth
-                            {...params}
+                            type="number"
+                            name="payment"
+                            placeholder="Payment"
+                            value={state.payment}
+                            onChange={handleChange}
                             variant="outlined"
-                            label="Doctor"
+                            label="Payment"
+                            className={classes.root2}
                         />
-                    }
-                />
 
-                <select name="category" onChange={handleChange}>
-                    <option value="Adult" selected={state.category === "Adult"}>Adult</option>
-                    <option value="Child" selected={state.category === "Child"}>Child</option>
-                </select>
+                        <Doctors
+                            value={state.id_doctor}
+                            onChange={(event, newValue) => {
+                                setState({ id_doctor: newValue ? newValue.id : "" });
+                            }}
+                            className={classes.root2}
+                        />
 
-                <Teeth
-                    category={state.category}
-                    name='id_teeth'
-                    value={state.id_teeth}
-                    onChange={handleChange}
-                />
+                    </Paper>
 
-                <Types
-                    value={state.types}
-                    onChange={(event, newValue) => {
-                        setState({ types: newValue });
-                    }}
-                />
 
-                <button type="button" onClick={handleRow}>+++</button>
+                    <Paper className={classes.paperFilter}>
 
-                <table>
-
-                    <tr>
-                        <th>Number Tooth</th>
-                        <th>Procedure Type</th>
-                        <th>Price</th>
-                        <th></th>
-                    </tr>
-
-                    {state.works.map(work =>
-                        <tr>
-                            <td>{(work.id_teeth == 1 || work.id_teeth == 2) ? "All Teeth" : work.id_teeth}</td>
-                            <td>{work.description}</td>
-                            <td>
-                                <input
-                                    type="number"
-                                    value={work.price}
-                                    onChange={e => changePriceWork(work.id, e.target.value)}
+                        <Autocomplete
+                            variant="outlined"
+                            options={["Adult", "Child"]}
+                            getOptionLabel={(option) => option}
+                            onChange={(event, newValue) => setState({ category: newValue })}
+                            renderInput={(params) =>
+                                <TextField
+                                    {...params}
+                                    variant="outlined"
+                                    label="Category"
+                                    className={classes.root}
                                 />
-                            </td>
-                            <td><button type="button" onClick={() => removeRow(work.id)}>Remove</button></td>
-                        </tr>
-                    )}
-                    <tr>
-                        <th>Total</th>
-                        <th></th>
-                        <th><input readOnly name="total" value={state.total} onChange={handleChange} /></th>
-                    </tr>
-                </table>
+                            }
+                        />
 
-                <button type="submit">SAVE</button>
-            </form>
-        </div>
+                        <Teeth
+                            value={state.id_teeth}
+                            category={state.category}
+                            onChange={(event, newValue) => setState({ id_teeth: newValue ? newValue.id : "" })}
+                            className={classes.root}
+                        />
+
+                        <Types
+                            value={state.id_doctor}
+                            onChange={(event, newValue) => setState({ types: newValue ? newValue : "" })}
+                            className={classes.root}
+                        />
+
+                        <Link onClick={handleRow}>
+                            <AddBoxIcon className={classes.addBoxIcon} />
+                        </Link>
+
+                    </Paper>
+
+
+                    <TableContainer component={Paper}>
+                        <Table>
+
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell align="center">#</TableCell>
+                                    <TableCell align="center">Tooth</TableCell>
+                                    <TableCell align="center">Act</TableCell>
+                                    <TableCell align="center">Price</TableCell>
+                                    <TableCell>Remove</TableCell>
+                                </TableRow>
+                            </TableHead>
+
+
+                            <TableBody>
+                                {state.works.map((work, i = 1) =>
+                                    <TableRow key={work.id}>
+
+                                        <TableCell align="center">
+                                            {i += 1}
+                                        </TableCell>
+
+                                        <TableCell align="center">
+                                        {(work.id_teeth == 1 || work.id_teeth == 2) ? "All Teeth" : work.id_teeth}
+                                        </TableCell>
+
+                                        <TableCell align="center">
+                                          {work.description}
+                                        </TableCell>
+
+                                        <TableCell align="center">
+                                            <input
+                                                type="number"
+                                                style={{ textAlign: "center" }}
+                                                placeholder="Price"
+                                                value={work.price}
+                                                onChange={e => changePriceWork(work.id, e.target.value)}
+                                                className={classes.root3}
+                                            />
+                                        </TableCell>
+
+
+                                        <TableCell align="center" className={classes.divRow}>
+                                            <Link onClick={() => removeRow(work.id)}>
+                                                <DeleteIcon className={classes.deleteIcon} />
+                                            </Link>
+                                        </TableCell>
+
+                                    </TableRow>
+                                )}
+
+                                <TableRow>
+                                    <TableCell></TableCell>
+                                    <TableCell>Total</TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell align="center">
+                                        <input
+                                            readOnly
+                                            name="total"
+                                            style={{ textAlign: "center" }}
+                                            value={state.total}
+                                            className={classes.inputSum}
+                                            onChange={handleChange}
+                                        />
+                                    </TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+
+                            </TableBody>
+
+                        </Table>
+                    </TableContainer>
+
+                    <div className={classes.flexDiv}>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            className={classes.submit}
+                        >
+                            Save
+                        </Button>
+
+                        <Button
+                            type="button"
+                            variant="contained"
+                            className={classes.submit}
+                            onClick={() => history.push({ pathname: "/procedure/list" })}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+
+                </form>
+            </Container>
+        </>
     )
 }

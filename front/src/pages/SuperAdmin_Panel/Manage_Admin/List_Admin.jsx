@@ -47,7 +47,7 @@ export default function List_Admin() {
                                 <h2><b>Admin</b></h2>
                             </div>
                         </div>
-                        <button className="addnew" onClick={() => history.push({ pathname: '/admin/create' })}><i className="fa fa-plus"></i> Add New</button>
+                        <button onClick={() => history.push({ pathname: '/admin/create' })}><i className="fa fa-plus"></i> Add New</button>
                     </div>
 
                     <table className="table table-striped table-hover">

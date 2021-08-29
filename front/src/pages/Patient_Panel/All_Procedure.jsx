@@ -3,7 +3,32 @@ import API from "../../API"
 import moment from "moment"
 import SessionContext from '../../components/session/SessionContext'
 
+import {
+    TableContainer,
+    Table,
+    TableHead,
+    TableBody,
+    TableCell,
+    TableRow,
+    Container,
+    Paper,
+    CssBaseline,
+    makeStyles,
+    Typography
+} from '@material-ui/core'
+
+const useStyles = makeStyles((theme) => ({
+    container: {
+        width: "100%",
+        margin: 5,
+        marginTop: 30,
+        marginBottom: 30
+    }
+}));
+
 export default function All_Procedure() {
+
+    const classes = useStyles();
 
     let { session: { user: { id, token, isAdmin } } } = useContext(SessionContext);
 
@@ -58,61 +83,95 @@ export default function All_Procedure() {
     }, [])
 
     return (
-        <div className="container-xl">
-            <div className="table-responsive">
-                <div className="table-wrapper">
-                    <div className="table-title row rowspacesp">
-                        <div className="row">
-                            <div className="col-sm-5">
-                                <h2><b>Procedures</b></h2>
-                            </div>
-                        </div>
-                    </div>
+        <>
+            <CssBaseline />
+            <Container className={classes.container}>
 
-                    <table className="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Date</th>
-                                <th>Hours</th>
-                                <th>Doctor</th>
-                                <th>Payment</th>
-                                <th>Tooth</th>
-                                <th>Act</th>
-                                <th>Price</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                <Typography variant="h3">
+                    Procedures
+                </Typography>
 
+                <TableContainer component={Paper}>
+                    <Table>
+
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>#</TableCell>
+                                <TableCell>Date</TableCell>
+                                <TableCell>Hours</TableCell>
+                                <TableCell>Doctor</TableCell>
+                                <TableCell align="center">Payment</TableCell>
+                                <TableCell align="center">Tooth</TableCell>
+                                <TableCell align="center">Act</TableCell>
+                                <TableCell align="center">Price</TableCell>
+                            </TableRow>
+                        </TableHead>
+
+
+                        <TableBody>
                             {procedures.map((procedure, i = 1) =>
-                                <tr>
-                                    <td>{i += 1}</td>
-                                    <td>{moment(procedure.date).format("YYYY-MM-DD")}  &nbsp;&nbsp;&nbsp;</td>
-                                    <td>{moment(procedure.date).format("h:mm A")}  &nbsp;&nbsp;&nbsp;</td>
-                                    <td>{procedure.f_n_doctor} {procedure.m_n_doctor} {procedure.l_n_doctor}</td>
-                                    <td>{procedure.payment}</td>
-                                    <td>
-                                        {works.filter(work => work.id_procedure == procedure.id_procedure).map(work => (
-                                            <li>{(work.id_teeth == 1 || work.id_teeth == 2) ? "All" : work.id_teeth}</li>
-                                        ))}
-                                    </td>
-                                    <td>
-                                        {works.filter(work => work.id_procedure == procedure.id_procedure).map(work => (
-                                            <li>{work.description}</li>
-                                        ))}
-                                    </td>
-                                    <td>
-                                        {works.filter(work => work.id_procedure == procedure.id_procedure).map(work => (
-                                            <li>{work.price}</li>
-                                        ))}
-                                    </td>
-                                </tr>
-                            )}
+                                <TableRow key={procedure.id}>
 
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+                                    <TableCell>
+                                        {i += 1}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {moment(procedure.date).format("YYYY-MM-DD")}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {moment(procedure.date).format("h:mm A")}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {procedure.f_n_doctor} {procedure.m_n_doctor} {procedure.l_n_doctor}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {procedure.payment}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {works.filter(work => work.id_procedure == procedure.id_procedure).map(work => (
+                                            <div key={work.id}>
+                                                <span key={work.id}>
+                                                    {(work.id_teeth == 1 || work.id_teeth == 2) ? "All" : work.id_teeth}
+                                                </span>
+                                                <br />
+                                            </div>
+                                        ))}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {works.filter(work => work.id_procedure == procedure.id_procedure).map(work => (
+                                            <div key={work.id}>
+                                                <span>
+                                                    {work.description}
+                                                </span>
+                                                <br />
+                                            </div>
+                                        ))}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {works.filter(work => work.id_procedure == procedure.id_procedure).map(work => (
+                                            <div key={work.id}>
+                                                <span key={work.id}>
+                                                    {work.price}
+                                                </span>
+                                                <br />
+                                            </div>
+                                        ))}
+                                    </TableCell>
+
+                                </TableRow>
+                            )}
+                        </TableBody>
+
+                    </Table>
+                </TableContainer>
+            </Container>
+        </>
     )
 }

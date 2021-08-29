@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme) => ({
         flexDirection: 'column',
         justifyContent: 'space-around',
         alignContent: 'center',
-        paddingTop:10
+        paddingTop: 10
     },
     container: {
         marginTop: '80px'
@@ -105,10 +105,10 @@ export default function List_Type() {
         <>
             <CssBaseline />
             <Container className={classes.container}>
-                <Grid container className={classes.containegrid}>
+                <Grid container>
                     <Grid item xs={6} md={3} sm={4}>
                         <Paper className={classes.paper} >
-                            <Link className="addnew" onClick={() => history.push({ pathname: '/type/create' })}>
+                            <Link onClick={() => history.push({ pathname: '/type/create' })}>
                                 <IconButton className={classes.root}>
                                     <AddCircleOutline
                                         className={classes.AddCircleOutline}
@@ -134,10 +134,10 @@ export default function List_Type() {
                                 <Typography
                                     className={classes.Typography}
                                 >
-                                 Price : 
+                                    Price :
                                     {type.bill}
                                 </Typography>
-                                
+
                                 <div className={classes.buttonsbar}>
                                     <Link
                                         onClick={() => history.push({ pathname: `/type/edit/${type.id}` })}
@@ -149,7 +149,7 @@ export default function List_Type() {
                                     </Link>
                                     <ConfirmDelete
                                         path={`type/${type.id}`}
-                                        name="type"
+                                        name="Act"
                                         fetchData={fetchData}
                                         className={classes.DeleteIcon}
                                     />

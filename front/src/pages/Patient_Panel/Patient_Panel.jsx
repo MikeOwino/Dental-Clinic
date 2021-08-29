@@ -11,7 +11,7 @@ export default function Patient_Panel() {
     useEffect(() => {
         async function fetchData() {
             try {
-                await API.post(`balance`, {
+                await API.post(`balanceData`, { id: id }, {
                     headers: {
                         id: id,
                         token: token,
@@ -21,10 +21,10 @@ export default function Patient_Panel() {
                     .then(res => {
                         let data = res.data.result;
                         const success = res.data.success;
+                        console.log(res);
                         if (success) {
-                            const result = data.find(d => d.id == id);
-                            let balance = (result.balance) ? result.balance : 0;
-                            let payment = (result.payment) ? result.payment : 0;
+                            let balance = (data.balance) ? data.balance : 0;
+                            let payment = (data.payment) ? data.payment : 0;
                             setRemaining(balance - payment);
                         }
                     });

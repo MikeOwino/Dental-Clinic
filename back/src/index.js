@@ -1223,7 +1223,7 @@ const start = async () => {
     });
 
     // GET JOIN A_C_P
-    app.post('/balance', isLoggedIn, async (req, res, next) => {
+    app.post('/balance', isLoggedInAdmin, async (req, res, next) => {
         let { id, dateFrom, dateTo } = req.body;
 
         try {
@@ -1285,7 +1285,64 @@ const start = async () => {
                     res.json({ success: true, result: arr });
                 });
 
+            });
+        } catch (e) {
+            next(e);
+        }
+    });
 
+    // GET JOIN A_C_P FOR PATIENT
+    app.post('/balanceData', isLoggedIn, async (req, res, next) => {
+        let { id } = req.body;
+
+        try {
+            let arr = [];
+            let getsql = `SELECT * FROM patients WHERE id = ${id}`;
+
+            let sql = `SELECT
+
+                       patients.id,
+                       patients.first_name,
+                       patients.middle_name,
+                       patients.last_name,
+           
+                       procedures.payment,
+                       procedures.balance,
+                       procedures.date
+
+                       FROM patients 
+                       LEFT JOIN procedures ON patients.id = procedures.id_patient`;
+
+            connection.query(sql, function (err, result) {
+                if (err) throw err;
+
+                connection.query(getsql, function (err, data) {
+                    if (err) throw err;
+
+                    data.map(idss => {
+
+                        let balanceTotal = 0;
+                        let paymentTotal = 0;
+
+                        result.filter(r => r.id === idss.id)
+                            .map(r => {
+                                balanceTotal += r.balance;
+                                paymentTotal += r.payment;
+                            });
+
+                        arr.push({
+                            id: idss.id,
+                            first_name: idss.first_name,
+                            middle_name: idss.middle_name,
+                            last_name: idss.last_name,
+                            payment: paymentTotal,
+                            balance: balanceTotal
+                        });
+
+                    });
+                    if (id && id != "") arr = arr.find(a => a.id == id);
+                    res.json({ success: true, result: arr });
+                });
             });
         } catch (e) {
             next(e);
@@ -1309,7 +1366,6 @@ const start = async () => {
 
             connection.query(sql, function (err, result) {
                 if (err) throw err;
-                // let data = result.filter(r => r.id == id);
                 res.json({ success: true, result: result });
             });
         } catch (e) {

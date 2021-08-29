@@ -1,17 +1,59 @@
 import React, { useState, useEffect, useContext } from "react"
+import { useHistory } from 'react-router'
 import API from "../../../API"
+import { Link } from "react-router-dom"
 import moment from "moment"
-import SessionContext from '../../../components/session/SessionContext'
+import SessionContext from "../../../components/session/SessionContext"
+
+import {
+    TableContainer,
+    Table,
+    TableHead,
+    TableBody,
+    TableCell,
+    TableRow,
+    Container,
+    Paper,
+    CssBaseline,
+    makeStyles,
+    Typography
+} from '@material-ui/core'
+
+import DeleteIcon from '@material-ui/icons/Delete'
+
+const useStyles = makeStyles((theme) => ({
+    container: {
+        width: "100%",
+        margin: 5,
+        marginTop: 30
+    },
+    deleteIcon: {
+        fill: "#ed4f1c",
+        "&:hover": {
+            fill: "#e24414"
+        },
+        marginLeft: "1%"
+    }
+}));
 
 export default function Remove_Request() {
+
+    const classes = useStyles();
+    const history = useHistory();
 
     let { session: { user: { id, token, isAdmin } } } = useContext(SessionContext);
 
     const [requests, setRequests] = useState([]);
 
-    async function handleDelete(id) {
+    async function handleDelete(id_req) {
         try {
-            await API.delete(`request/${id}`);
+            await API.delete(`request/${id_req}`, {
+                headers: {
+                    id: id,
+                    token: token,
+                    isAdmin: isAdmin
+                }
+            });
             fetchData();
         } catch (e) {
             console.log("ERROR", e);
@@ -32,8 +74,8 @@ export default function Remove_Request() {
                     console.log(data);
                     const success = res.data.success;
                     if (success) {
-                        data = data.filter(res => res.status === "Watting");
-                        data = data.filter(res => res.id_patient === id)
+                        data = data.filter(res => res.status === "Waiting");
+                        data = data.filter(res => res.id_patient === parseInt(id))
                         setRequests(data);
                     }
                 });
@@ -47,43 +89,57 @@ export default function Remove_Request() {
     }, [id])
 
     return (
-        <div className="container-xl">
-            <div className="table-responsive">
-                <div className="table-wrapper">
-                    <div className="table-title row rowspacesp">
-                        <div className="row">
-                            <div className="col-sm-5">
-                                <h2><b>Request</b></h2>
-                            </div>
-                        </div>
-                    </div>
+        <>
+            <CssBaseline />
+            <Container className={classes.container}>
 
-                    <table className="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>Description</th>
-                                <th>Date</th>
-                                <th>Hours</th>
-                                <th>Manage</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                <Typography variant="h3">
+                    Requests
+                </Typography>
 
-                            {requests.map(request => (
-                                <tr key={request.id}>
-                                    <td>{request.description}</td>
-                                    <td>{moment(request.date).format("YYYY-MM-DD")}  &nbsp;&nbsp;&nbsp;</td>
-                                    <td>{moment(request.date).format("h:mm A")}  &nbsp;&nbsp;&nbsp;</td>
-                                    <td>
-                                        <a href="" onClick={() => handleDelete(request.id)} className="delete" title="Delete" data-toggle="tooltip"><i className="material-icons">&#xE5C9;</i></a>
-                                    </td>
-                                </tr>
-                            ))}
 
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+                <TableContainer component={Paper}>
+                    <Table>
+
+                        <TableHead>
+                            <TableRow>
+                                <TableCell align="center">Date</TableCell>
+                                <TableCell align="center">Time</TableCell>
+                                <TableCell align="center">Description</TableCell>
+                                <TableCell align="center">Manage</TableCell>
+                            </TableRow>
+                        </TableHead>
+
+
+                        <TableBody>
+                            {requests.map(request =>
+                                <TableRow key={request.id}>
+
+                                    <TableCell align="center">
+                                        {moment(request.date).format("YYYY-MM-DD")}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {moment(request.date).format("h:mm A")}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {request.description}
+                                    </TableCell>
+
+                                    <TableCell align="center" className={classes.divRow}>
+                                        <Link onClick={() => handleDelete(request.id)}>
+                                            <DeleteIcon className={classes.deleteIcon} />
+                                        </Link>
+                                    </TableCell>
+
+                                </TableRow>
+                            )}
+                        </TableBody>
+
+                    </Table>
+                </TableContainer>
+            </Container>
+        </>
     )
 }

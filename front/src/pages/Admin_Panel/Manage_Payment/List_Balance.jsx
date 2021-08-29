@@ -1,21 +1,103 @@
 import React, { useEffect, useState, useContext } from "react"
 import { useHistory } from 'react-router'
-import moment from "moment"
+import { Link } from "react-router-dom"
 import API from "../../../API"
+import moment from "moment"
 import SessionContext from "../../../components/session/SessionContext"
+
+import {
+    TableContainer,
+    Table,
+    TableHead,
+    TableBody,
+    TableCell,
+    TableRow,
+    Container,
+    Paper,
+    CssBaseline,
+    makeStyles,
+    Typography,
+    TextField
+} from '@material-ui/core'
+
+import SettingsIcon from '@material-ui/icons/Settings'
+import RefreshIcon from '@material-ui/icons/Refresh'
+
+import MomentUtils from '@date-io/moment'
+
+import {
+    KeyboardDatePicker,
+    MuiPickersUtilsProvider
+} from '@material-ui/pickers'
+
+const useStyles = makeStyles((theme) => ({
+    container: {
+        width: "100%",
+        margin: 5,
+        marginTop: 30,
+        marginBottom: 30
+    },
+    paperFilter: {
+        backgroundColor: "#FFFFFF",
+        padding: 12,
+        marginBottom: 10,
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-between"
+    },
+    root: {
+        '& label.Mui-focused': {
+            color: theme.palette.primary.main,
+        },
+        '& .MuiInput-underline:after': {
+            borderBottomColor: theme.palette.primary.main,
+        },
+        '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+                borderColor: theme.palette.primary.main,
+            },
+            '&:hover fieldset': {
+                borderColor: theme.palette.primary.main,
+            },
+            '&.Mui-focused fieldset': {
+                borderColor: theme.palette.primary.main,
+            },
+        },
+    },
+    settingsIcon: {
+        fill: "#ed4f1c",
+        "&:hover": {
+            fill: "#e24414"
+        }
+    },
+    resetSearch: {
+        backgroundColor: "#8BE3D9",
+        color: "#FFFFFF",
+        padding: 6,
+        fontSize: 53,
+        borderRadius: "5px",
+        '&:hover': {
+            backgroundColor: "#BEF4F4"
+        },
+        '&:active':{
+            backgroundColor: "#A1F0EB"
+        }
+    }
+}));
 
 export default function List_Balance() {
 
-    let { session: { user: { id, token, isAdmin } } } = useContext(SessionContext);
-
+    const classes = useStyles();
     const history = useHistory();
+
+    let { session: { user: { id, token, isAdmin } } } = useContext(SessionContext);
 
     const [state, updateState] = useState({
         isFetch: true,
         balances: [],
         name: "",
-        dateFrom: "",
-        dateTo: "",
+        dateFrom: "2000-01-01",
+        dateTo: "2000-01-01",
         max: '',
         min: ''
     });
@@ -36,7 +118,6 @@ export default function List_Balance() {
 
         async function fetchData() {
             try {
-
                 if (state.isFetch) {
                     await API.get(`maxmindate`, {
                         headers: {
@@ -59,7 +140,6 @@ export default function List_Balance() {
                     setState({ isFetch: false });
                 }
 
-
                 let reqBody = {
                     dateFrom: moment(state.dateFrom).add(-1, 'days').format("YYYY-MM-DD"),
                     dateTo: moment(state.dateTo).add(1, 'days').format("YYYY-MM-DD")
@@ -76,23 +156,27 @@ export default function List_Balance() {
                         const data = res.data.result;
                         const success = res.data.success;
                         if (success) {
-                            console.log(data);
-                            if (state.name && state.name != "") {
-                                let length = state.name.length;
+                            if (data) {
                                 let result = data.filter(d =>
-                                    ((d.first_name.substring(0, length)).toLowerCase() == (state.name).toLowerCase())
+                                    (d.balance && d.balance != 0 && d.balance != "")
                                     ||
-                                    ((d.last_name.substring(0, length)).toLowerCase() == (state.name).toLowerCase())
-                                    ||
-                                    (((d.first_name + " " + d.last_name).substring(0, length)).toLowerCase() == (state.name).toLowerCase())
-                                    ||
-                                    (((d.first_name + " " + d.middle_name + " " + d.last_name).substring(0, length)).toLowerCase() == (state.name).toLowerCase())
-                                    ||
-                                    (d.id == parseInt(state.name))
+                                    (d.payment && d.payment != 0 && d.payment != "")
                                 );
+                                if (state.name && state.name != "") {
+                                    let length = state.name.length;
+                                    result = result.filter(d =>
+                                        ((d.first_name.substring(0, length)).toLowerCase() == (state.name).toLowerCase())
+                                        ||
+                                        ((d.last_name.substring(0, length)).toLowerCase() == (state.name).toLowerCase())
+                                        ||
+                                        (((d.first_name + " " + d.last_name).substring(0, length)).toLowerCase() == (state.name).toLowerCase())
+                                        ||
+                                        (((d.first_name + " " + d.middle_name + " " + d.last_name).substring(0, length)).toLowerCase() == (state.name).toLowerCase())
+                                        ||
+                                        (((d.id).toString()).substring(0, length) == state.name)
+                                    );
+                                }
                                 setState({ balances: result });
-                            } else {
-                                setState({ balances: data });
                             }
                         }
                     });
@@ -104,92 +188,120 @@ export default function List_Balance() {
     }, [JSON.stringify([state.name, state.dateFrom, state.dateTo])])
 
     return (
-        <div className="container-xl">
-            <div className="table-responsive">
-                <div className="table-wrapper">
-                    <div className="table-title row rowspacesp">
-                        <div className="row">
-                            <div className="col-sm-5">
-                                <h2><b>Balances</b></h2>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <input
-                            type="search"
-                            placeholder="Search"
-                            className="form-control"
-                            name="name"
-                            value={state.name}
-                            onChange={handleChange}
+        <>
+            <CssBaseline />
+            <Container className={classes.container}>
+
+                <Typography variant="h3">
+                    Balances
+                </Typography>
+
+                <Paper className={classes.paperFilter}>
+
+                    <TextField
+                        variant="outlined"
+                        label="Search"
+                        name="name"
+                        value={state.name}
+                        onChange={handleChange}
+                        className={classes.root}
+                    />
+
+                    <MuiPickersUtilsProvider utils={MomentUtils} >
+                        <KeyboardDatePicker
+                            label="From"
+                            variant="outlined"
+                            inputVariant="outlined"
+                            format="YYYY/MM/DD"
+                            value={state.dateFrom}
+                            onChange={(date) => setState({ dateFrom: moment(date).format("YYYY-MM-DD") })}
+                            KeyboardButtonProps={{
+                                'aria-label': 'change date',
+                            }}
+                            className={classes.root}
                         />
-                    </div>
-                    <input
-                        type="date"
-                        value={state.dateFrom}
-                        name="dateFrom"
-                        onChange={handleChange}
-                    />
+                    </MuiPickersUtilsProvider>
 
-                    <input
-                        type="date"
-                        value={state.dateTo}
-                        name="dateTo"
-                        onChange={handleChange}
-                    />
+                    <MuiPickersUtilsProvider utils={MomentUtils} >
+                        <KeyboardDatePicker
+                            label="To"
+                            variant="outlined"
+                            inputVariant="outlined"
+                            format="YYYY/MM/DD"
+                            value={state.dateTo}
+                            onChange={(date) => setState({ dateTo: moment(date).format("YYYY-MM-DD") })}
+                            KeyboardButtonProps={{
+                                'aria-label': 'change date',
+                            }}
+                            className={classes.root}
+                        />
+                    </MuiPickersUtilsProvider>
 
-                    <button
-                        type="button"
+                    <Link
                         onClick={() => {
                             setState({
                                 dateFrom: state.min,
-                                dateTo: state.max
+                                dateTo: state.max,
+                                name: ""
                             })
                         }}
-                    > Reset </button>
+                    >
+                        <RefreshIcon className={classes.resetSearch} />
+                    </Link>
 
-                    <table className="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Patient</th>
-                                <th>balance</th>
-                                <th>Payment</th>
-                                <th>Remaining</th>
-                                <th>Details</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                </Paper>
 
-                            {state.balances.map(balance => (
-                                <tr key={balance.id}>
-                                    <td>{balance.id}</td>
-                                    <td>{balance.first_name} {balance.middle_name} {balance.last_name}</td>
-                                    <td>{balance.balance}</td>
-                                    <td>{balance.payment}</td>
-                                    <td>{balance.balance - balance.payment}</td>
-                                    <td>
-                                        {((balance.balance && balance.balance != 0) || (balance.payment && balance.payment != 0)) ?
-                                            <a href=""
-                                                onClick={() => history.push({ pathname: `/balance/details/${balance.id}` })}
-                                                className="settings"
-                                                title="Settings"
-                                                data-toggle="tooltip"
-                                            >
-                                                <i className="material-icons">
-                                                    &#xE8B8;
-                                                </i>
-                                            </a>
-                                            : null
-                                        }
-                                    </td>
-                                </tr>
-                            ))}
+                <TableContainer component={Paper}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>ID</TableCell>
+                                <TableCell>Patient</TableCell>
+                                <TableCell align="center">balance</TableCell>
+                                <TableCell align="center">Payment</TableCell>
+                                <TableCell align="center">Remaining</TableCell>
+                                <TableCell align="center">Details</TableCell>
+                            </TableRow>
+                        </TableHead>
 
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+
+                        <TableBody>
+                            {state.balances.map(balance =>
+                                <TableRow key={balance.id}>
+
+                                    <TableCell>
+                                        {balance.id}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {balance.first_name} {balance.middle_name} {balance.last_name}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {balance.balance}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {balance.payment}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {balance.balance - balance.payment}
+                                    </TableCell>
+
+                                    <TableCell align="center" className={classes.divRow}>
+                                        <Link onClick={() => history.push({ pathname: `/balance/details/${balance.id}` })}>
+                                            <SettingsIcon className={classes.settingsIcon} />
+                                        </Link>
+                                    </TableCell>
+
+                                </TableRow>
+                            )}
+                        </TableBody>
+
+                    </Table>
+                </TableContainer>
+            </Container>
+        </>
     )
 }

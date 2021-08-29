@@ -1,15 +1,72 @@
 import React, { useEffect, useState, useContext } from "react"
 import { useHistory } from 'react-router'
 import API from "../../../API"
+import { Link } from 'react-router-dom'
 import SessionContext from "../../../components/session/SessionContext"
+
+import {
+    IconButton,
+    Container,
+    Grid,
+    CssBaseline,
+    Paper,
+    makeStyles,
+    CardContent,
+    Avatar
+} from '@material-ui/core'
+
+import EditIcon from '@material-ui/icons/Edit'
+import { AddCircleOutline } from '@material-ui/icons'
 
 import ConfirmDelete from "../../../components/ConfirmDelete"
 
+const useStyles = makeStyles((theme) => ({
+    root: {
+        "&:hover": {
+            backgroundColor: "transparent"
+        }
+    },
+    EditIcon: {
+        color: theme.palette.primary.main
+    },
+    DeleteIcon: {
+        fill: 'red'
+    },
+    paper: {
+        height: '90%',
+        width: ' 80%',
+        textAlign: 'center',
+        display: 'flex !important',
+        flexDirection: 'column',
+        justifyContent: 'space-around',
+        alignContent: 'center',
+        paddingTop: 10
+    },
+    container: {
+        marginTop: '80px'
+    },
+    AddCircleOutline: {
+        width: '20%',
+        height: '10%',
+    },
+    buttonsbar: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        paddingBottom: 10
+    },
+    avatIcon: {
+        color: "White",
+        backgroundColor: "#8BE3D9"
+    },
+}));
+
 export default function List_Doctor() {
 
-    let { session: { user: { id, token, isAdmin } } } = useContext(SessionContext);
-
+    const classes = useStyles();
     const history = useHistory();
+
+    let { session: { user: { id, token, isAdmin } } } = useContext(SessionContext);
 
     const [doctors, setDoctors] = useState([]);
 
@@ -38,59 +95,60 @@ export default function List_Doctor() {
     }, [])
 
     return (
-        <div className="container-xl">
-            <div className="table-responsive">
-                <div className="table-wrapper">
-                    <div className="table-title row rowspacesp">
-                        <div className="row">
-                            <div className="col-sm-5">
-                                <h2><b>Doctor</b></h2>
-                            </div>
-                        </div>
-                        <button className="addnew" onClick={() => history.push({ pathname: '/doctor/create' })}><i className="fa fa-plus"></i> Add New</button>
-                    </div>
+        <>
+            <CssBaseline />
+            <Container className={classes.container}>
+                <Grid container>
+                    <Grid item xs={12} md={6} sm={6}>
+                        <Paper className={classes.paper} >
+                            <Link onClick={() => history.push({ pathname: '/doctor/create' })}>
+                                <IconButton className={classes.root}>
+                                    <AddCircleOutline
+                                        className={classes.AddCircleOutline}
+                                    />
+                                </IconButton>
+                            </Link>
+                        </Paper>
+                    </Grid>
 
-                    <table className="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Full Name</th>
-                                <th>Phone</th>
-                                <th>Manage</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                    {doctors.map(doctor => (
+                        <Grid item xs={12} md={6} sm={6} key={doctor.id}>
+                            <Paper key={doctor.id} className={classes.paper} >
 
-                            {doctors.map(doctor => (
-                                <tr key={doctor.id}>
-                                    <td>{doctor.id}</td>
-                                    <td>{doctor.first_name} {doctor.middle_name} {doctor.last_name}</td>
-                                    <td>{doctor.phone}</td>
-                                    <td>
-                                        <a
-                                            href=""
-                                            onClick={() => history.push({ pathname: `/doctor/edit/${doctor.id}` })}
-                                            className="settings"
-                                            title="Settings"
-                                            data-toggle="tooltip"
-                                        >
-                                            <i className="material-icons">
-                                                &#xE8B8;
-                                            </i>
-                                        </a>
-                                        <ConfirmDelete
-                                            path={`doctor/${doctor.id}`}
-                                            name="doctor"
-                                            fetchData={fetchData}
-                                        />
-                                    </td>
-                                </tr>
-                            ))}
+                                <CardContent>
+                                    <div className={classes.root}>
+                                        <Avatar src="/broken-image.jpg" className={classes.avatIcon}>
+                                            {doctor.first_name.substring(0, 1)}{doctor.last_name.substring(0, 1)}
+                                        </Avatar>
+                                    </div>
+                                    <h3 className={classes.heading}>{doctor.first_name} {doctor.middle_name} {doctor.last_name}</h3>
+                                    <span className={classes.subheader}>Call : {doctor.phone}</span>
+                                </CardContent>
 
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+                                <div className={classes.buttonsbar}>
+                                    <Link
+                                        onClick={() => history.push({ pathname: `/doctor/edit/${doctor.id}` })}
+                                        className="settings"
+                                    >
+                                        <IconButton>
+                                            <EditIcon />
+                                        </IconButton>
+                                    </Link>
+                                    <ConfirmDelete
+                                        path={`doctor/${doctor.id}`}
+                                        name="Doctor"
+                                        fetchData={fetchData}
+                                        className={classes.DeleteIcon}
+                                    />
+
+                                </div>
+
+                            </Paper>
+                        </Grid>
+                    ))}
+
+                </Grid>
+            </Container>
+        </>
     )
 }

@@ -1,9 +1,67 @@
 import React, { useState, useEffect, useContext } from "react"
+import { useHistory } from 'react-router'
 import API from "../../../API"
+import { Link } from "react-router-dom"
 import moment from "moment"
 import SessionContext from "../../../components/session/SessionContext"
 
+import {
+    TableContainer,
+    Table,
+    TableHead,
+    TableBody,
+    TableCell,
+    TableRow,
+    Container,
+    Paper,
+    CssBaseline,
+    makeStyles,
+    Typography
+} from '@material-ui/core'
+
+import DeleteIcon from '@material-ui/icons/Delete'
+
+import CachedIcon from '@material-ui/icons/Cached'
+
+const useStyles = makeStyles((theme) => ({
+    container: {
+        width: "100%",
+        margin: 5,
+        marginTop: 30
+    },
+    deleteIcon: {
+        fill: "#ed4f1c",
+        "&:hover": {
+            fill: "#e24414"
+        },
+        marginLeft: "1%"
+    },
+    historyBtn: {
+        width: 155,
+        paddingBottom: 7,
+        margin: 10,
+        backgroundColor: "#FFFFFF",
+        color: "#8BE3D9",
+        '&:hover': {
+            color: "#FFFFFF",
+            backgroundColor: "#8BE3D9"
+        }
+    },
+    historyBtnLink: {
+        textDecoration: "none",
+        fontSize: 16
+    },
+    historyIcon: {
+        position: "relative",
+        top: 6,
+        right: 10
+    }
+}));
+
 export default function List_Request() {
+
+    const classes = useStyles();
+    const history = useHistory();
 
     let { session: { user: { id, token, isAdmin } } } = useContext(SessionContext);
 
@@ -52,50 +110,82 @@ export default function List_Request() {
     }, [])
 
     return (
-        <div className="container-xl">
-            <div className="table-responsive">
-                <div className="table-wrapper">
-                    <div className="table-title row rowspacesp">
-                        <div className="row">
-                            <div className="col-sm-5">
-                                <h2><b>Request</b></h2>
-                            </div>
-                        </div>
+        <>
+            <CssBaseline />
+            <Container className={classes.container}>
 
-                        <button className="addnew" style={{ 'backgroundColor': "red" }} >Delete All</button>
-                    </div>
+                <Typography variant="h3">
+                    History Requests
+                </Typography>
 
-                    <table className="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Patient</th>
-                                <th>Date</th>
-                                <th>Hours</th>
-                                <th>Status</th>
-                                <th>Manage</th>
-                            </tr>
-                        </thead>
-                        <tbody>
 
-                            {requests.map(request => (
-                                <tr key={request.id}>
-                                    <td>{request.id}</td>
-                                    <td>{request.first_name} {request.middle_name} {request.last_name}</td>
-                                    <td>{request.description}</td>
-                                    <td>{moment(request.date).format("YYYY-MM-DD")}  &nbsp;&nbsp;&nbsp;</td>
-                                    <td>{moment(request.date).format("h:mm A")}  &nbsp;&nbsp;&nbsp;</td>
-                                    <td>{request.status}</td>
-                                    <td>
-                                        <a href="" onClick={() => handleDelete(request.id)} className="delete" title="Delete" data-toggle="tooltip"><i className="material-icons">&#xE5C9;</i></a>
-                                    </td>
-                                </tr>
-                            ))}
+                <Link
+                    onClick={() => history.push({ pathname: '/request/list' })}
+                    className={classes.historyBtnLink}
+                >
+                    <Paper align="center" className={classes.historyBtn}>
+                        <CachedIcon className={classes.historyIcon} />
+                        New Requests
+                    </Paper>
+                </Link>
 
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+                <TableContainer component={Paper}>
+                    <Table>
+
+                        <TableHead>
+                            <TableRow>
+                                <TableCell align="center">ID</TableCell>
+                                <TableCell align="center">Name</TableCell>
+                                <TableCell align="center">Description</TableCell>
+                                <TableCell align="center">Date</TableCell>
+                                <TableCell align="center">Time</TableCell>
+                                <TableCell align="center">Status</TableCell>
+                                <TableCell align="center">Manage</TableCell>
+                            </TableRow>
+                        </TableHead>
+
+
+                        <TableBody>
+                            {requests.map(request =>
+                                <TableRow key={request.id}>
+
+                                    <TableCell>
+                                        {request.id_patient}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {request.first_name} {request.middle_name} {request.last_name}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {request.description}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {moment(request.date).format("YYYY-MM-DD")}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {moment(request.date).format("h:mm A")}
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        {request.status}
+                                    </TableCell>
+
+                                    <TableCell align="center" className={classes.divRow}>
+                                        <Link onClick={() => handleDelete(request.id)}>
+                                            <DeleteIcon className={classes.deleteIcon} />
+                                        </Link>
+                                    </TableCell>
+
+                                </TableRow>
+                            )}
+                        </TableBody>
+
+                    </Table>
+                </TableContainer>
+            </Container>
+        </>
     )
 }

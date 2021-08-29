@@ -135,7 +135,7 @@ console.log("hello i'm here",{ id, token, isAdmin});
                                 <h2><b>Patients</b></h2>
                             </div>
                         </div>
-                        <button className="addnew" onClick={() => history.push({ pathname: '/patient/create' })}><i className="fa fa-plus"></i> Add New</button>
+                        <button onClick={() => history.push({ pathname: '/patient/create' })}><i className="fa fa-plus"></i> Add New</button>
                     </div>
 
                     <div>
